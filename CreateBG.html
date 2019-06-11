@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="translated-ltr">
+<head>
+    <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script> 
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="http://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+    <script src="http://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-circular-gauge.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  
+    <style>
+        html, body{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #212121;
+        }
+        .info{
+            width: 100%;
+            height: 15%;  
+            background-color: #212121;
+            float: left;
+            text-align: center;
+        }
+        .bot{
+            width: 100%;
+            height: 10%;  
+            background-color: #212121;
+            float: left;
+        }
+        #canvas
+        {
+            width: 75%;
+            height: 75%;  
+            background-color: #212121;
+            float: left;
+            border:1px solid;
+            border-color:white;
+        }
+        .fill{
+            width: 12.4%;
+            height: 75%;
+            float: left;
+        }
+        svg{
+            fill:#212121
+        }
+        .help{
+            width:15%;
+            height:25px;
+            background:none;
+            border: 1px solid white;
+            border-radius: 0.5em;
+            color: white;
+            font-size: 14px;
+            margin: 10px;
+		    margin-top: 50px;
+            text-align: center;
+        }
+        .btn{
+            width:5%;
+            height:25px;
+            background:none;
+            border: 1px solid white;
+            border-radius: 0.5em;
+            color: white;
+            font-size: 14px;
+            margin: 10px;
+		    margin-top: 50px;
+            text-align: center;
+        }
+        label{
+            color: #FFFFFF;
+            background:none;
+            font-size: 20px;
+            margin: 10px;
+		    margin-top: 30px;
+            margin-right:0; 
+            text-align: center
+        }
+    </style>
+</head>
+ <body>
+    <div class = "info">
+        <label for="name">NAME</label>
+        <input type="text" name="" id="names" class="help">
+        <label for="value">VALUE</label>
+        <input type="text" name="" id="value" class="help">
+        <label for="value">TITLE</label>
+        <input type="text" name="" id="title" class="help">
+        <input type="button" name="" id="preview" value = "preview" class="btn">
+        <input type="button" name="" id="btn" value = "save" class="btn">
+    </div>
+    <div class="fill"></div>
+    <div id="canvas"></div>
+    <div class="fill"></div>
+    <div class="bot"></div>
+    <script>
+
+        var flag = 0;
+        $("#preview").click(function(){
+            /*
+            ["吸猪","吸狗","吸余心怡"]
+            [50,75,100]
+            ["大哥每天都在干嘛","吸",30]
+            */
+            if ($("#names").val() == "" || $("#value").val() == "" || $("#title").val() == "")
+            {
+                alert("Please input the infomation!");
+            }
+            else
+            {
+                var names = eval("("+$("#names").val()+")"); //["ai","怎么回事","20","30"];
+                var data = eval("("+$("#value").val()+")");
+                var title = eval("("+$("#title").val()+")"); 
+
+                console.log("name:"+names);
+                console.log("value:"+data);
+                console.log("title:"+title);
+            
+                if (names.length == 0 || data.length == 0 || names.length != data.length || title.length != 2)
+                {
+                    alert("Input Error!");
+                }
+                else
+                {
+                    drawCoolCool(data,names,title);
+                    flag = 1;
+                }
+            }
+        })
+
+        $("#btn").click(function hello(){
+            if (flag == 1 || data != [])
+            {
+                html2canvas($("#canvas")[0]).then(function(canvas) {
+                    var imgUri = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+                    console.log("the img is:"+imgUri);
+	                window.location.href= imgUri;
+                });
+            }
+            else
+            {
+                alert("No Picture!");
+            }
+        });
+
+        function drawCoolCool(data,names,title){
+            $("#canvas").find("div").remove();
+            var dataSet = anychart.data.set(data);
+            var color = ["#d50000","#ff80ab","#ab47bc","#5e35b1","#5c6bc0","#448aff","#03a9f4","#4caf50","#ffa000","#a1887f","#76ff03","#ffee58","#455a64","#5c6bc0","#b39ddb","#6a1b9a"];
+            var palette = anychart.palettes.distinctColors().items(color);
+            var r = 100/(data.length+1);
+            console.log("r"+r*1.2);
+            var makeBarWithBar = function (gauge, radius, i, width, without_stroke) {
+            var stroke = '1 #e5e4e4';
+            if (without_stroke) {
+                stroke = null;
+                gauge.label(i)
+                    .text('<span style="font-size:'+ (r*1.2).toString() +'px;">'+names[i]+ '</span>')
+                    .useHtml(true);
+                gauge.label(i)
+                    .hAlign('center')
+                    .vAlign('middle')
+                    .anchor('right-center')
+                    .padding(5,5,5,10)
+                    .height(width / 2 + '%')
+                    .offsetY(radius + '%')
+                    .offsetX(0);
+            }
+
+            gauge.bar(i).dataIndex(i)
+                .radius(radius)
+                .width(width)
+                .fill(palette.itemAt(i))
+                .stroke(null)
+                .zIndex(5);
+            
+            gauge.bar(i + 100).dataIndex(5)
+                .radius(radius)
+                .width(width)
+                .fill('#F5F4F4')
+                .stroke(stroke)
+                .zIndex(4);
+
+            return gauge.bar(i)
+            };
+
+            anychart.onDocumentReady(function () {
+            var gauge = anychart.gauges.circular();
+            gauge.data(dataSet);
+            gauge.fill('#212121')
+                .stroke(null)
+                .padding(0)
+                .margin(100)
+                .startAngle(0)
+                .sweepAngle(270);
+
+            var axis = gauge.axis().radius(100).width(1).fill(null);
+            axis.scale()
+                .minimum(0)
+                .maximum(100)
+                .ticks({interval: 1})
+                .minorTicks({interval: 1});
+            axis.labels().enabled(false);
+            axis.ticks().enabled(false);
+            axis.minorTicks().enabled(false);
+            for (var i = 0; i < data.length; i++)
+            {
+                makeBarWithBar(gauge, (i+1)*r, i, r * 0.8, true);
+            }
+
+            gauge.margin(10);
+            gauge.title().text('<span style="color:#929292; font-size:30px;">'+title[0]+'</span>' +
+                '<br/><span style="color:#929292; font-size: 20px;">('+title[1]+')</span>').useHtml(true);
+            gauge.title()
+                .enabled(true)
+                .hAlign('center')
+                .padding(0)
+                .margin([0, 0, 20, 0]);
+            gauge.container('canvas');
+            gauge.draw();
+            $(".anychart-credits").remove();
+
+            var paths = $("#canvas").find("path");
+		    for (var i = 0; i < paths.length;i++)
+		    {
+			    tmp = paths[i];
+			    if ($(tmp).attr("fill") == "#ffffff" || $(tmp).attr("fill") == "#F5F4F4")
+			    {
+				    console.log("the id is:"+tmp);
+				    $(tmp).attr("fill","#212121");
+			    }	
+		    }
+            });
+        }
+  </script>
+ 
+</body></html>
